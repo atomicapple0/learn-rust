@@ -1,22 +1,20 @@
 use std::env;
-use std::fs;
+use minigrep::Config;
+use std::process;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let query = args[1].clone();
-    let filename = args[2].clone();
 
-    let contents = fs::read_to_string(filename).expect("wtf happened to the file");
+    let config = Config::new(&args).unwrap_or_else(|err| {
+        println!("Problem parsing arguments: {}", err);
+        process::exit(1);
+    });
 
-    let mut results = Vec::new();
+    println!("Searching for {}", config.query);
+    println!("In file {}", config.filename);
 
-    for line in contents.lines() {
-        if line.contains(&query) {
-            results.push(line);
-        }
-    }
-
-    for line in results {
-        println!("{}", line);
+    if let Err(e) = minigrep::run(config) {
+        println!("Application error: {}", e);
+        process::exit(1);
     }
 }
